@@ -8,14 +8,10 @@ using namespace sl;
 
 int main()
 {
-	if (!Init("static lib", 600, 600, 0x20))
+	if (!Init("static lib", 600, 600, 0))
 	{
 		return 1;
 	}
-
-	Texture texture = LoadTexture("image.jpg");
-
-	Sound sound = LoadSound("music.mp3");
 
 	while (!sl::ShouldClose())
 	{

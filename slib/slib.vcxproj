@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\slibmain.cpp" />
+    <ClCompile Include="src\mainexample.cpp" />
     <ClCompile Include="src\slib_audio.cpp" />
     <ClCompile Include="src\slib_render.cpp" />
     <ClCompile Include="src\slib_app.cpp" />

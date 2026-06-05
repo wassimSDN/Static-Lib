@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\slibmain.cpp">
+    <ClCompile Include="src\mainexample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\slib_app.cpp">

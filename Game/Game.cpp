@@ -5,7 +5,7 @@ using namespace sl;
 //good enough
 int main()
 {
-	if (!Init("Flappy Bird", 288, 512, 0))
+	if (!Init("Game", 640, 480, 0))
 	{
 		return 1;
 	}
@@ -34,7 +34,7 @@ int main()
 
 	while (!ShouldClose())
 	{
-		if (KeyJustDown(Key::space))//here setup the condition that makes the dll reload, could be a keypress
+		if (false)//here setup the condition that makes the dll reload, could be a keypress
 									//or some other fancy stuff you want to make, beware of the loading times
 		{
 			CloseDll(lib);

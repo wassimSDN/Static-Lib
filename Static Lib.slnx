@@ -1,0 +1,9 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Game/Game.vcxproj" Id="b86845ef-925c-408a-8e8f-eb79c32b08ab" />
+  <Project Path="GameLogic/GameLogic.vcxproj" Id="8a5c0cbf-4740-4411-a419-000a8b128161" />
+  <Project Path="slib/slib.vcxproj" Id="e378fa54-dd73-4c7a-a6ce-e67cd3248073" />
+</Solution>

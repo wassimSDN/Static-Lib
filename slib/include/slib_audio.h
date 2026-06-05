@@ -2,6 +2,7 @@
 
 namespace sl
 {
+	// interface not complete so docs aren't complete
 	struct Sound
 	{
 		void* Data = nullptr; //treated internally as MIX_Track*

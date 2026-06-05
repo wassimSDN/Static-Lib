@@ -5,48 +5,146 @@
 namespace sl
 {
     //Initialization
+    /**
+    * Initialize and create a window and renderer.
+    *
+    * \param title title for the window.
+    * \param width width of the window.
+    * \param height height of the window.
+    * \param flags flags for the window.
+    * \returns true if succeeded, false otherwise.
+    * 
+    * \sa Quit
+    */
 	bool Init
 	(
 		const char* title,
 		int width,
-		int heigt,
+		int height,
 		int flags
 	);
     //*Initialization
 
     //Cleanup
+    /**
+    * Closes the window and cleans up.
+    *
+    * \sa Init
+    */
     void Quit();
     //*Cleanup
 
     //API Stuff
+    /**
+    * Set the internal pointer to the App state data.
+    * 
+    * \param ApiP a pointer to the App state data.
+    *
+    * \sa GetApi
+    */
     void SetApi(void* ApiP);
+    /**
+    * Get a pointer to the internal App state.
+    *
+    * \returns a pointer to the internal App state.
+    * 
+    * \sa SetApi
+    */
     void* GetApi();
+    /**
+    * Get a pointer to the internal renderer.
+    *
+    * \returns a pointer to the internal renderer.
+    */
     void* GetRenderer();
+    /**
+    * Get a pointer to the internal window.
+    *
+    * \returns a pointer to the internal window.
+    */
     void* GetWindow();
+    /**
+    * Get a pointer to the internal GPU Device used for rendering.
+    *
+    * \returns a pointer to the internal GPU Device used for rendering.
+    */
     void* GetDevice();
+    /**
+    * Get a pointer to the internal mixer used for audio.
+    *
+    * \returns a pointer to the internal mixer used for audio.
+    */
     void* GetMixer();
     //*API Stuff
 
     //Clear and Present
+    /**
+    * Clear the window with black.
+    * 
+    * \sa FlipBuffer
+    */
     void ClearBuffer();
+    /**
+    * Present the rendered data to the window.
+    *
+    * \sa ClearBuffer
+    */
     void FlipBuffer();
+    /**
+    * Wait an amount of time before returning.
+    *
+    * \param Delayms the amount of time in milliseconds.
+    */
     void Delay(uint64_t Delayms);
     //*Clear and Present
 
     //Window Stuff
+    /**
+    * Get the window's X position.
+    *
+    * \returns the window's X position.
+    */
     int WindowX();
+    /**
+    * Get the window's Y position.
+    *
+    * \returns the window's Y position.
+    */
     int WindowY();
+    /**
+    * Get the window's width.
+    *
+    * \returns the window's width.
+    */
     int WindowWidth();
+    /**
+    * Get the window's height.
+    *
+    * \returns the window's height.
+    */
     int WindowHeight();
     //*Window Stuff
     
     //Time Stuff
+    /**
+    * Set the number of ticks per second.
+    *
+    * \param Ticks the number of ticks per second.
+    */
     void SetTicks(int Ticks);
+    /**
+    * Check wether the fixed update is ticking.
+    *
+    * \returns true if ticking, false otherwise.
+    */
     bool Ticking();
     //*Time Stuff
-
-    //check if an close was requested on the window
-    //(clicked the "X" button / ctrl + c)
+    
+    /**
+    * Check if a close was requested on the window (clicked the "X" button / ctrl + c).
+    *
+    * \returns true if a close was requested, false otherwise.
+    */
 	bool ShouldClose();
     //****
 
@@ -68,19 +166,85 @@ namespace sl
     
     //Get Mouse States
     enum class Mouse; //definition at the end of file
-    float MouseX();
+    /**
+    * Get the mouse X position on the window.
+    *
+    * \returns the mouse X position on the window.
+    */
+    float MouseX();    
+    /**
+    * Get the mouse Y position on the window.
+    *
+    * \returns the mouse Y position on the window.
+    */
     float MouseY();
+    /**
+    * Check whether a mouse button is currently pressed down.
+    *
+    * \param mouse the button to check.
+    * 
+    * \returns true if the button is currently pressed down, false otherwise.
+    */
     bool MouseDown(Mouse mouse);
-    bool MouseJustDown(Mouse mouse);
-    bool MouseUp(Mouse mouse);
+    /**
+    * Check whether a mouse button is just pressed down.
+    *
+    * \param mouse the button to check.
+    *
+    * \returns true if the button is just pressed down, false otherwise.
+    */
+    bool MouseJustDown(Mouse mouse);   
+    /**
+    * Check whether a mouse button is currently not pressed down.
+    *
+    * \param mouse the button to check.
+    *
+    * \returns true if the button is currently not pressed down, false otherwise.
+    */
+    bool MouseUp(Mouse mouse);    
+    /**
+    * Check whether a mouse button is just not pressed down.
+    *
+    * \param mouse the button to check.
+    *
+    * \returns true if the button is just not pressed down, false otherwise.
+    */
     bool MouseJustUp(Mouse mouse);
     //*Get Mouse States
 
     //Get keyboard key States
     enum class Key; //defintion at the end of file
+    /**
+    * Check whether a key is currently pressed down.
+    *
+    * \param key the key to check.
+    *
+    * \returns true if the key is pressed down, false otherwise.
+    */
     bool KeyDown(Key key);
+    /**
+    * Check whether a key is just pressed down.
+    *
+    * \param key the key to check.
+    *
+    * \returns true if the key is just pressed down, false otherwise.
+    */
     bool KeyJustDown(Key key);
+    /**
+    * Check whether a key is currently not pressed down.
+    *
+    * \param key the key to check.
+    *
+    * \returns true if the key is currently not pressed down, false otherwise.
+    */
     bool KeyUp(Key key);
+    /**
+    * Check whether a key is just not pressed down.
+    *
+    * \param key the key to check.
+    *
+    * \returns true if the key is just not pressed down, false otherwise.
+    */
     bool KeyJustUp(Key key);
     //*Get keyboard key States
 

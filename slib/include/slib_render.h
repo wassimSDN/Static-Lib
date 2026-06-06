@@ -117,7 +117,7 @@ namespace sl
 	*/
 	struct Surface
 	{
-		void* Data = nullptr; //treated as SDL_Surface* internally
+		void* Data = nullptr; /**< treated as SDL_Surface* internally */
 		bool Loaded = false;
 
 		~Surface();

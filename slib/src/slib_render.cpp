@@ -62,6 +62,7 @@ namespace sl
 			Temp = SDL_CreateSurface(100, 100, SDL_PIXELFORMAT_RGBA8888);
 			if (!Temp)
 			{
+				PrintError("Failed to create surface: ");
 				return { nullptr, false };
 			}
 			Loaded = false;
@@ -85,6 +86,20 @@ namespace sl
 		}
 		else
 		{
+			if (Temp->format != SDL_PIXELFORMAT_RGBA8888)
+			{
+				SDL_Surface* Temp2 = SDL_ConvertSurface(Temp, SDL_PIXELFORMAT_RGBA8888);
+				if (Temp2)
+				{
+					SDL_DestroySurface(Temp);
+					Temp = Temp2;
+					SDL_DestroySurface(Temp2);
+				}
+				else
+				{
+					PrintError("Failed to convert texture format: ");
+				}
+			}
 			Loaded = true;
 		}
 		
@@ -93,12 +108,15 @@ namespace sl
 
 	Surface::~Surface()
 	{
-		DestroySurface(*this);
-		std::cout << "Destroyed surface\n";
+		if(Data)
+		{
+			DestroySurface(*this);
+		}
 	}
 	void DestroySurface(Surface& surface)
 	{
 		SDL_DestroySurface((SDL_Surface*)surface.Data);
+		surface.Data = nullptr;
 	}
 
 	//bullshit i made to change what function is ran
@@ -181,11 +199,14 @@ namespace sl
 	void DestroyTexture(Texture &texture)
 	{
 		SDL_DestroyTexture((SDL_Texture*)texture.Data);
-		std::cout << "Destroyed texture\n";
+		texture.Data = nullptr;
 	}
 	Texture::~Texture()
 	{
-		DestroyTexture(*this);
+		if(Data)
+		{
+			DestroyTexture(*this);
+		}
 	}
 
 	Shader LoadShader(const char* Path)

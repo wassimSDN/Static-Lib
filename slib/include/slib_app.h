@@ -157,10 +157,56 @@ namespace sl
         void (*Render)(void*, void*) = nullptr;
         void (*Set)(void*) = SetApi;
     };
+    /*
+    * an opaque handle to a Dynamic-Link Library (.dll, .so, .dylib, etc).
+    * 
+    * \sa OpenDll
+    * \sa CloseDll
+    * \sa GetFunction
+    */
     typedef void* DynamicLibrary;
+    /*
+    * Load a Dynamic-Link Library file.
+    * 
+    * \param Path the .dll file path.
+    * 
+    * \returns an opaque handle to the dll.
+    * 
+    * \sa CloseDll
+    * \sa GetFunction
+    */
     DynamicLibrary OpenDll(const char* Path);
+    /*
+    * Free a Dynamic-Link Library from memory.
+    *
+    * \param DLL the dll to close.
+    *
+    * \returns an opaque handle to the dll.
+    *
+    * \sa OpenDll
+    * \sa GetFunction
+    */
     void CloseDll(DynamicLibrary DLL);
+    /*
+    * Get a function from a Dynamic-Link Library.
+    *
+    * \param DLL the dll to get the function from.
+    *
+    * \returns a pointer to the function, it's the user's responsibilty
+    *           to determine it's type.
+    *
+    * \sa OpenDll
+    * \sa CloseDll
+    */
     void* GetFunction(DynamicLibrary DLL, const char* FunctionSignature);
+    /*
+    * Copy a file.
+    *
+    * \param Source the original path of the file.
+    * \param Destination the path of the copy.
+    *
+    * \returns true if copy succeeded, false otherwise.
+    */
     bool CpyFile(const char* Source, const char* Destination); 
     //*DLL Api
     

@@ -9,7 +9,6 @@ namespace sl
 	void PrintError(const char* Header);
 	//*forward declarations
 
-
 	Sound LoadSound(const char* Path)
 	{
 		MIX_Audio* audio = MIX_LoadAudio((MIX_Mixer*)GetMixer(), Path, true);
@@ -23,12 +22,14 @@ namespace sl
 		if (!track)
 		{
 			PrintError("Failed to create track: ");
+			MIX_DestroyAudio(audio);
 			return { nullptr };
 		}
 
 		if (!MIX_SetTrackAudio(track, audio))
 		{
 			PrintError("Failed to set track audio: ");
+			MIX_DestroyAudio(audio);
 			return { nullptr };
 		}
 		MIX_DestroyAudio(audio);
@@ -72,6 +73,18 @@ namespace sl
 	void StopSound(Sound& sound)
 	{
 		MIX_PauseTrack((MIX_Track*)sound.Data);
+	}
+	void DestroySound(Sound& sound)
+	{
+		MIX_DestroyTrack((MIX_Track*)sound.Data);
+		sound.Data = nullptr;
+	}
+	Sound::~Sound()
+	{
+		if (Data)
+		{
+			DestroySound(*this);
+		}
 	}
 }
 

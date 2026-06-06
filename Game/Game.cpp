@@ -34,8 +34,8 @@ int main()
 
 	while (!ShouldClose())
 	{
-		if (false)//here setup the condition that makes the dll reload, could be a keypress
-									//or some other fancy stuff you want to make, beware of the loading times
+		if (false)	//here setup the condition that makes the dll reload, could be a keypress
+					//or some other fancy stuff you want to make.
 		{
 			CloseDll(lib);
 			if (!CpyFile(originalPath, copyPath))

@@ -6,7 +6,7 @@ namespace sl
 {
 	//forward declarations
 	void* GetMixer();
-	void PrintError(const char* Header);
+	void PrintSDLError(const char* Header);
 	//*forward declarations
 
 	Sound LoadSound(const char* Path)
@@ -14,21 +14,21 @@ namespace sl
 		MIX_Audio* audio = MIX_LoadAudio((MIX_Mixer*)GetMixer(), Path, true);
 		if (!audio)
 		{
-			PrintError("Failed to load audio: ");
+			PrintSDLError("Failed to load audio: ");
 			return { nullptr };
 		}
 
 		MIX_Track* track = MIX_CreateTrack((MIX_Mixer*)GetMixer());
 		if (!track)
 		{
-			PrintError("Failed to create track: ");
+			PrintSDLError("Failed to create track: ");
 			MIX_DestroyAudio(audio);
 			return { nullptr };
 		}
 
 		if (!MIX_SetTrackAudio(track, audio))
 		{
-			PrintError("Failed to set track audio: ");
+			PrintSDLError("Failed to set track audio: ");
 			MIX_DestroyAudio(audio);
 			return { nullptr };
 		}
@@ -41,7 +41,7 @@ namespace sl
 		if (!MIX_PlayTrack((MIX_Track*)sound.Data, 0))
 		//if (!MIX_PlayAudio((MIX_Mixer*)GetMixer(), (MIX_Audio*)sound.Data))
 		{
-			PrintError("Failed to play track: ");
+			PrintSDLError("Failed to play track: ");
 		}
 	}
 	void PlaySound(Sound& sound, int times)
@@ -49,7 +49,7 @@ namespace sl
 		static SDL_PropertiesID prop = SDL_CreateProperties();
 		if (!prop)
 		{
-			PrintError("Failed to create propertires: ");
+			PrintSDLError("Failed to create propertires: ");
 		}
 		if (times < 1)
 		{
@@ -64,7 +64,7 @@ namespace sl
 		static SDL_PropertiesID prop = SDL_CreateProperties();
 		if (!prop)
 		{
-			PrintError("Failed to create propertires: ");
+			PrintSDLError("Failed to create propertires: ");
 		}
 
 		SDL_SetNumberProperty(prop, MIX_PROP_PLAY_LOOPS_NUMBER, -1);

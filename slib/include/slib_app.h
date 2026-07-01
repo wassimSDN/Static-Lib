@@ -79,17 +79,29 @@ namespace sl
 
     //Clear and Present
     /**
-    * Clear the window with black.
+    * Clear the window with a color.
     * 
     * \sa FlipBuffer
     */
-    void ClearBuffer();
+    void ClearBuffer(int r = 0, int g = 0, int b = 0, int a = 1);
     /**
     * Present the rendered data to the window.
     *
     * \sa ClearBuffer
     */
     void FlipBuffer();
+    /**
+    * Get the time passed since SDL_Init inside Init was called in seconds.
+    * 
+    * \returns the time passed since SDL_Init inside Init was called in seconds.
+    */
+    float CurrentTime();
+    /**
+    * Get the time passed between the last frame and the one before it.
+    *
+    * \returns the time passed between the last frame and the one before it.
+    */
+    long double DeltaTime();
     /**
     * Wait an amount of time before returning.
     *

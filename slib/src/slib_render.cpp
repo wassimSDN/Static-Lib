@@ -9,12 +9,24 @@ namespace sl
 {
 	//Forward declarations
 	struct API;	
-	extern API* Api;
-
-	void PrintError(const char* Header);
+	void PrintSDLError(const char* Message);
+	void PrintInfo(const char* Message);
+	void PrintWarning(const char* Message);
 	void* GetRenderer();
 	void* GetDevice();
+	void* GetWindow();
 	//*Forward declarations
+
+	//********Globals********//
+	extern API* Api;
+	extern SDL_GPUCommandBuffer* CommandBuffer;
+	extern SDL_GPURenderPass* RenderPass;
+	extern SDL_GPUTexture* SwapChaintexture;
+	extern SDL_GPUGraphicsPipeline* Pipeline;
+	extern SDL_GPUShader *VertexShader;
+	extern SDL_GPUShader* FragmentShader;
+	//*****End Of Globals**//
+
 
 	bool RectCollision(Rect First, Rect Second)
 	{
@@ -58,11 +70,11 @@ namespace sl
 		bool Loaded = false;
 		if (!Temp)
 		{
-			PrintError("Failed to load image: ");
+			PrintSDLError("Failed to load image: ");
 			Temp = SDL_CreateSurface(100, 100, SDL_PIXELFORMAT_RGBA8888);
 			if (!Temp)
 			{
-				PrintError("Failed to create surface: ");
+				PrintSDLError("Failed to create surface: ");
 				return { nullptr, false };
 			}
 			Loaded = false;
@@ -93,11 +105,10 @@ namespace sl
 				{
 					SDL_DestroySurface(Temp);
 					Temp = Temp2;
-					SDL_DestroySurface(Temp2);
 				}
 				else
 				{
-					PrintError("Failed to convert texture format: ");
+					PrintSDLError("Failed to convert texture format: ");
 				}
 			}
 			Loaded = true;
@@ -117,6 +128,11 @@ namespace sl
 	{
 		SDL_DestroySurface((SDL_Surface*)surface.Data);
 		surface.Data = nullptr;
+	}
+
+	void CreateGraphicsPipeline()
+	{
+
 	}
 
 	//bullshit i made to change what function is ran
@@ -148,7 +164,7 @@ namespace sl
 		}
 		if (!SDL_SetTextureScaleMode((SDL_Texture*)Temp.Data, SDL_SCALEMODE_PIXELART))
 		{
-			PrintError("Failed to set texture scale mode: ");
+			PrintSDLError("Failed to set texture scale mode: ");
 			//don't return, Texture is technically valid
 		}
 
@@ -174,7 +190,7 @@ namespace sl
 	{
 		if (!texture.RenderFunction(SDL_GetRendererFromTexture((SDL_Texture*)texture.Data), texture.Data, nullptr, nullptr))
 		{
-			PrintError("Failed to render texture: ");
+			PrintSDLError("Failed to render texture: ");
 		}
 	}
 	void RenderTexture(Texture &texture, Rect Destination)
@@ -183,7 +199,7 @@ namespace sl
 
 		if (!texture.RenderFunction(SDL_GetRendererFromTexture((SDL_Texture*)texture.Data), texture.Data, nullptr, &dst))
 		{
-			PrintError("Failed to render texture: ");
+			PrintSDLError("Failed to render texture: ");
 		}
 	}
 	void RenderTexture(Texture &texture, Rect Source, Rect Destination)
@@ -193,7 +209,7 @@ namespace sl
 
 		if (!texture.RenderFunction(SDL_GetRendererFromTexture((SDL_Texture*)texture.Data), texture.Data, &src, &dst))
 		{
-			PrintError("Failed to render texture: ");
+			PrintSDLError("Failed to render texture: ");
 		}
 	}
 	void DestroyTexture(Texture &texture)
@@ -209,55 +225,78 @@ namespace sl
 		}
 	}
 
-	Shader LoadShader(const char* Path)
+	Shader LoadShader(const char* Path, int NumberOfUniformBuffers)
 	{
-		size_t size = 0;
-		void *file = SDL_LoadFile(Path, &size);
-		if (!file)
-		{
-			PrintError("Failed to load  shader file: ");
-			return { nullptr };
-		}
-		SDL_GPUShaderCreateInfo info = { 0 };
-		info.code = (uint8_t*)file;
-		info.code_size = size;
-		info.entrypoint = "main";
-		info.format = SDL_GPU_SHADERFORMAT_SPIRV;
-		info.stage = SDL_GPU_SHADERSTAGE_FRAGMENT;
+		void* ResultShader = nullptr;
+		void* ResultRenderState = nullptr;
 
-		SDL_GPUShader* shader = SDL_CreateGPUShader((SDL_GPUDevice*)GetDevice(), &info);
-		if (!shader)
+		size_t Size = 0;
+		uint8_t* Code = (uint8_t*)SDL_LoadFile(Path, &Size);
+		if (!Code)
 		{
-			PrintError("Failed to create shader: ");
-			return { nullptr };
+			PrintSDLError("Failed to load shader file: ");
+			return { nullptr, nullptr };
 		}
 
-		SDL_GPURenderStateCreateInfo stateInfo =
+		SDL_GPUShaderCreateInfo ShaderInfo = { 0 };
+		ShaderInfo.code = Code;
+		ShaderInfo.code_size = Size;
+		ShaderInfo.entrypoint = "main"; //the SDL example doesn't mention this for some reason? 
+										  //shaders still work though
+		ShaderInfo.format = SDL_GPU_SHADERFORMAT_SPIRV;
+		ShaderInfo.stage = SDL_GPU_SHADERSTAGE_FRAGMENT;
+		ShaderInfo.num_samplers = 1;
+		ShaderInfo.num_uniform_buffers = NumberOfUniformBuffers;
+
+		ResultShader = SDL_CreateGPUShader((SDL_GPUDevice*)GetDevice(), &ShaderInfo);
+		SDL_free(Code);
+		if (!ResultShader)
 		{
-			.fragment_shader = shader
-		};
-		SDL_GPURenderState* state = SDL_CreateGPURenderState((SDL_Renderer*)GetRenderer(), &stateInfo);
-		if (!state)
-		{
-			PrintError("Failed to create render state");
-			return { nullptr };
+			PrintSDLError("Failed to create shader: ");
+			return { nullptr, nullptr };
 		}
 
-		return { state };
+		SDL_GPURenderStateCreateInfo StateInfo = { 0 };
+		StateInfo.fragment_shader = (SDL_GPUShader*)ResultShader;
+		ResultRenderState = SDL_CreateGPURenderState((SDL_Renderer*)GetRenderer(), &StateInfo);
+		if (!ResultRenderState)
+		{
+			SDL_ReleaseGPUShader((SDL_GPUDevice*)GetDevice(), (SDL_GPUShader*)ResultShader);
+			PrintSDLError("Failed to create render state: ");
+			return { nullptr, nullptr };
+		}
+
+		return { ResultShader, ResultRenderState };
+	}
+	void PushUniforms(Shader &shader, int Slot, void* Data, size_t Size)
+	{
+		if (!SDL_SetGPURenderStateFragmentUniforms((SDL_GPURenderState*)shader.RenderState, Slot, Data, Size))
+		{
+			PrintSDLError("Failed to push uniforms: ");
+		}
 	}
 	void BeginShader(Shader& shader)
 	{
-		if (!SDL_SetGPURenderState((SDL_Renderer*)GetRenderer(), (SDL_GPURenderState*)shader.Data))
+		if (!SDL_SetGPURenderState((SDL_Renderer*)GetRenderer(), (SDL_GPURenderState*)shader.RenderState))
 		{
-			PrintError("Failed to set gpu render state: ");
+			PrintSDLError("Failed to set gpu render state: ");
 		}
 	}
 	void EndShader()
 	{
 		if (!SDL_SetGPURenderState((SDL_Renderer*)GetRenderer(), nullptr))
 		{
-			PrintError("Failed to unset gpu render state: ");
+			PrintSDLError("Failed to set gpu render state: ");
 		}
+	}
+	void DestroyShader(Shader& shader)
+	{
+		SDL_ReleaseGPUShader((SDL_GPUDevice*)GetDevice(), (SDL_GPUShader*)shader.Shader_);
+		SDL_DestroyGPURenderState((SDL_GPURenderState*)shader.RenderState);
+	}
+	Shader::~Shader()
+	{
+		DestroyShader(*this);
 	}
 
 	void RenderPoint(Point point, Color color)
@@ -268,7 +307,7 @@ namespace sl
 
 		if (!SDL_RenderPoint((SDL_Renderer*)GetRenderer(), point.x, point.y))
 		{
-			PrintError("Failed to render point: ");
+			PrintSDLError("Failed to render point: ");
 		}
 
 		SDL_SetRenderDrawColor((SDL_Renderer*)GetRenderer(), r, g, b, a);
@@ -281,7 +320,7 @@ namespace sl
 
 		if (!SDL_RenderLine((SDL_Renderer*)GetRenderer(), StartPoint.x, StartPoint.y, EndPoint.x, EndPoint.y))
 		{
-			PrintError("Failed to render line: ");
+			PrintSDLError("Failed to render line: ");
 		}
 
 		SDL_SetRenderDrawColor((SDL_Renderer*)GetRenderer(), r, g, b, a);

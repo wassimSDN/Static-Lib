@@ -13,27 +13,32 @@ namespace sl
 {
 	struct API
 	{
+		bool CurrentKeyStates[SDL_SCANCODE_COUNT] = { false };
+		bool PreviousKeyStates[SDL_SCANCODE_COUNT] = { false };
+
+		bool CurrentMouseStates[(int)Mouse::count] = { false };
+		bool PreviousMouseStates[(int)Mouse::count] = { false };
+
 		SDL_Window* Window = nullptr;
 		SDL_Renderer* Renderer = nullptr;
-		SDL_GPUDevice* GPU = nullptr;
+		SDL_GPUDevice* Device = nullptr;
 		MIX_Mixer* Mixer = nullptr;
-
-		bool CurrentKeyStates[SDL_SCANCODE_COUNT]	= { false };
-		bool PreviousKeyStates[SDL_SCANCODE_COUNT]	= { false };
-
-		bool CurrentMouseStates[(int)Mouse::count]	= { false };
-		bool PreviousMouseStates[(int)Mouse::count] = { false };
-		bool Motion = false;
-		float x = 0.f, y = 0.f;
-
-		bool Running = true;
 
 		long double DeltaTime = 0.;
 		long double LastTime = 0.;
 		long double TimeStep = 0.;
 		long double AccumulatedTime = 0.;
+
+		float x = 0.f, y = 0.f;
+
+		bool Motion = false;
+		
+		bool Running = true;
 	};
+
+	//********Globals********//
 	API* Api = nullptr;
+	//*****End Of Globals**//
 
 	void SetApi(void* ApiP)
 	{
@@ -60,16 +65,29 @@ namespace sl
 	}
 	void *GetDevice()
 	{
-		return Api->GPU;
+		return Api->Device;
 	}
 	void* GetMixer()
 	{
 		return Api->Mixer;
 	}
 
-	void PrintError(const char *Header)
+	//crappy "logging" ""system""
+	void PrintSDLError(const char *Message)
 	{
-		std::cerr << Header << SDL_GetError() << '\n';
+		std::cerr << "[ERROR] " << Message << SDL_GetError() << '\n';
+	}
+	void PrintError(const char* Message)
+	{
+		std::cerr << "[ERROR] " << Message << '\n';
+	}
+	void PrintInfo(const char* Message)
+	{
+		std::cout << "[INFO] " << Message << '\n';
+	}
+	void PrintWarning(const char* Message)
+	{
+		std::cerr << "[WARNING] " << Message << '\n';
 	}
 
 	void PrintWindowsError()
@@ -78,13 +96,18 @@ namespace sl
 		FormatMessageA(	FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
 						nullptr, GetLastError(), 0, (LPSTR)&Message, 0, nullptr);
 		
-		std::cout << Message << '\n';
+		std::cerr << Message << '\n';
 
 		LocalFree(Message);
 	}
 
 	bool Init(const char* Title, int Width, int Height, int Flags)
 	{
+		int major = SDL_VERSIONNUM_MAJOR(SDL_GetVersion());
+		int minor = SDL_VERSIONNUM_MINOR(SDL_GetVersion());
+		int micro = SDL_VERSIONNUM_MICRO(SDL_GetVersion());
+		std::cout << "[INFO] Using SDL " << major << '.' << minor << '.' << micro << '\n';
+
 		try
 		{
 			Api = new API;
@@ -94,90 +117,97 @@ namespace sl
 			std::cerr << "Failed to Allocate for API: " << e.what() << '\n';
 			return false;
 		}
-		std::cout << "Api allocated\n";
+		PrintInfo("Api allocated");
 
-		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_CAMERA))
+		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMEPAD | SDL_INIT_CAMERA ))
 		{
-			PrintError("Failed to initialize: ");
+			PrintSDLError("Failed to initialize: ");
 			return false;
 		}
-		std::cout << "SDL Initialized\n";
+		PrintInfo("SDL Initialized");
 
 		Api->Window = SDL_CreateWindow(Title, Width, Height, Flags);
 		if (!Api->Window)
 		{
-			PrintError("Failed to create Window: ");
+			PrintSDLError("Failed to create Window: ");
 			return false;
 		}
-		std::cout << "Window Created\n";
+		PrintInfo("Window Created");
 		
-		const char Driver[] = "vulkan"; //using vulkan because fuck this entire thing 
-		
-		Api->GPU = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, Driver);
-		if (!Api->GPU)
+		char Driver[] = "vulkan"; //using vulkan because fuck this entire thing 
+		Api->Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, Driver);
+		if (!Api->Device)
 		{
-			PrintError("Failed to Create GPU device: ");
+			PrintSDLError("Failed to get renderer gpu device: ");
 			return false;
 		}
-		std::cout << "Created GPU device\n";
 
-		Api->Renderer = SDL_CreateGPURenderer(Api->GPU, Api->Window);
+		Api->Renderer = SDL_CreateGPURenderer(Api->Device, Api->Window);
 		if (!Api->Renderer)
 		{
-			PrintError("Failed to create renderer: ");
+			PrintSDLError("Failed to create renderer: ");
 			return false;
 		}
-		std::cout << "GPU Renderer Created With " << Driver << '\n';
-
+		
 		if (!MIX_Init())
 		{
-			PrintError("Failed to init Mixer: ");
+			PrintSDLError("Failed to init Mixer: ");
 			return false;
 		}
-		std::cout << "Initialized Mixer\n";
-		
+		PrintInfo("Initialized Mixer");
+
 		Api->Mixer = MIX_CreateMixerDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
 		if (!Api->Mixer)
 		{
-			PrintError("Failed to create Mixer device: ");
+			PrintSDLError("Failed to create Mixer device: ");
 			return false;
 		}
-		std::cout << "Created mixer device\n";
+		PrintInfo("Created mixer device");
 
 		Api->LastTime = (long double)SDL_GetPerformanceCounter() / (long double)SDL_GetPerformanceFrequency();
 		SetTicks(-1);
+
 		return true;
 	}
 	void Quit()
 	{
+		MIX_DestroyMixer(Api->Mixer);
+		PrintInfo("Mixer Destroyed");
+
 		SDL_DestroyRenderer(Api->Renderer);
-		std::cout << "Renderer Destroyed\n";
-		
+		PrintInfo("Renderer Destroyed");
+
+		SDL_DestroyGPUDevice(Api->Device);
+		PrintInfo("GPU Device Destroyed");
+
 		SDL_DestroyWindow(Api->Window);
-		std::cout << "Window Destroyed\n";
-		
+		PrintInfo("Window Destroyed");
+
+		MIX_Quit();
+		PrintInfo("Mixer Clean Up");
+
 		SDL_Quit();
-		std::cout << "SDL Cleaned Up\n";
+		PrintInfo("SDL Cleaned Up");
 
 		delete Api;
-		std::cout << "Api Freed\n";
+		PrintInfo("Api Freed");
 	}
 	int WindowX()
 	{
-		int x = 0;
+		int x = -1;
 		if (!SDL_GetWindowPosition(Api->Window, &x, nullptr))
 		{
-			PrintError("Failed to get window X position: ");
+			PrintSDLError("Failed to get window X position: ");
 		}
 
 		return x;
 	}
 	int WindowY()
 	{
-		int y = 0;
+		int y = -1;
 		if (!SDL_GetWindowPosition(Api->Window, nullptr, &y))
 		{
-			PrintError("Failed to get window Y position: ");
+			PrintSDLError("Failed to get window Y position: ");
 		}
 
 		return y;
@@ -187,7 +217,7 @@ namespace sl
 		int w = 0;
 		if (!SDL_GetWindowSize(Api->Window, &w, nullptr))
 		{
-			PrintError("Failed to get window width: ");
+			PrintSDLError("Failed to get window width: ");
 		}
 
 		return w;
@@ -197,25 +227,42 @@ namespace sl
 		int h = 0;
 		if (!SDL_GetWindowSize(Api->Window, nullptr, &h))
 		{
-			PrintError("Failed to get window height: ");
+			PrintSDLError("Failed to get window height: ");
 		}
 
 		return h;
 	}
 
-	void ClearBuffer()
+	void ClearBuffer(int r, int g, int b, int a)
 	{
-		SDL_RenderClear(Api->Renderer);
+		if(!SDL_SetRenderDrawColor(Api->Renderer, r, g, b, a))
+		{
+			PrintSDLError("Failed to set clear color: ");
+		}
+		if (!SDL_RenderClear(Api->Renderer))
+		{
+			PrintSDLError("Failed to clear buffer: ");
+		}
 	}
 	void FlipBuffer()
 	{
-		SDL_RenderPresent(Api->Renderer);
+		if (!SDL_RenderPresent(Api->Renderer))
+		{
+			PrintSDLError("Failed to flip buffer: ");
+		}
+	}
+	long double DeltaTime()
+	{
+		return Api->DeltaTime;
+	}
+	float CurrentTime()
+	{
+		return SDL_GetTicks() / 1000.f;
 	}
 	void Delay(uint64_t Delayms)
 	{
 		SDL_DelayPrecise(Delayms * 1000000);
 	}
-
 	void SetTicks(int Ticks)
 	{
 		if (Ticks > 0)

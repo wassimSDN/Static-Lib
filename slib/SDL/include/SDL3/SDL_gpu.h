@@ -4095,7 +4095,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WindowSupportsGPUPresentMode(
  *
  * This must be called before SDL_AcquireGPUSwapchainTexture is called using
  * the window. You should only call this function from the thread that created
- * the window.
+ * the window. https://wiki.libsdl.org/SDL3/SDL_GPUColorTargetInfo
  *
  * The swapchain will be created with SDL_GPU_SWAPCHAINCOMPOSITION_SDR and
  * SDL_GPU_PRESENTMODE_VSYNC. If you want to have different swapchain

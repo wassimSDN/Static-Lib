@@ -19,7 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\mainexample.cpp" />
+    <ClCompile Include="src\slib_examplemain.cpp" />
     <ClCompile Include="src\slib_audio.cpp" />
     <ClCompile Include="src\slib_render.cpp" />
     <ClCompile Include="src\slib_app.cpp" />
@@ -52,13 +52,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -131,7 +131,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)SDL/lib/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -158,7 +158,7 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(ProjectDir)SDL/lib/x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib</AdditionalDependencies>
     </Link>
     <Lib>
       <AdditionalDependencies>SDL3.lib;SDL3_image.lib;SDL3_mixer.lib;%(AdditionalDependencies)</AdditionalDependencies>

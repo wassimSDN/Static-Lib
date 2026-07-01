@@ -198,14 +198,18 @@ namespace sl
 	//Incomplete API, DO NOT USE
 	//TODO refactor slib to complete the shader interface
 	struct Shader;
-	Shader LoadShader(const char* Path);
+	Shader LoadShader(const char* Path, int NumberOfUniformBuffers);
+	void PushUniforms(Shader& shader, int slot, void* Data, size_t size);
+	void BeginShader(Shader& shader);
+	void EndShader();
+	void DestroyShader(Shader& shader);
 
 	struct Shader
 	{
-		void* Data = nullptr;
-	};
+		void* Shader_ = nullptr;
+		void* RenderState = nullptr;
 
-	void BeginShader(Shader& shader);
-	void EndShader();
+		~Shader();
+	};
 	//*Incomplete API, DO NOT USE
 }

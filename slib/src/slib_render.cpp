@@ -71,11 +71,11 @@ namespace sl
 		if (!Temp)
 		{
 			PrintSDLError("Failed to load image: ");
-			Temp = SDL_CreateSurface(100, 100, SDL_PIXELFORMAT_RGBA8888);
+			Temp = SDL_CreateSurface(10, 10, SDL_PIXELFORMAT_RGBA8888);
 			if (!Temp)
 			{
 				PrintSDLError("Failed to create surface: ");
-				return { nullptr, false };
+				return { 0 };
 			}
 			Loaded = false;
 
@@ -154,15 +154,15 @@ namespace sl
 
 		if (!Temp.Data)
 		{
-			return { nullptr, nullptr };
+			return { 0 };
 		}
 
 		Temp.Data = SDL_CreateTextureFromSurface((SDL_Renderer*)GetRenderer(), (SDL_Surface*)Temp.Data);
 		if (!Temp.Data)
 		{
-			return { nullptr, nullptr };
+			return { 0 };
 		}
-		if (!SDL_SetTextureScaleMode((SDL_Texture*)Temp.Data, SDL_SCALEMODE_PIXELART))
+		if (!SDL_SetTextureScaleMode((SDL_Texture*)Temp.Data, SDL_SCALEMODE_NEAREST))
 		{
 			PrintSDLError("Failed to set texture scale mode: ");
 			//don't return, Texture is technically valid
@@ -178,7 +178,6 @@ namespace sl
 		{
 			RenderFunction = RenderNormal;
 		}
-
 		return { Temp.Data, RenderFunction };
 	}
 
@@ -235,7 +234,7 @@ namespace sl
 		if (!Code)
 		{
 			PrintSDLError("Failed to load shader file: ");
-			return { nullptr, nullptr };
+			return {0};
 		}
 
 		SDL_GPUShaderCreateInfo ShaderInfo = { 0 };
@@ -253,7 +252,7 @@ namespace sl
 		if (!ResultShader)
 		{
 			PrintSDLError("Failed to create shader: ");
-			return { nullptr, nullptr };
+			return {0};
 		}
 
 		SDL_GPURenderStateCreateInfo StateInfo = { 0 };
@@ -263,7 +262,7 @@ namespace sl
 		{
 			SDL_ReleaseGPUShader((SDL_GPUDevice*)GetDevice(), (SDL_GPUShader*)ResultShader);
 			PrintSDLError("Failed to create render state: ");
-			return { nullptr, nullptr };
+			return {0};
 		}
 
 		return { ResultShader, ResultRenderState };

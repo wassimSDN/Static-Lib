@@ -132,8 +132,7 @@ namespace sl
 			PrintSDLError("Failed to create Window: ");
 			return false;
 		}
-		PrintInfo("Window Created");
-		
+	
 		char Driver[] = "vulkan"; //using vulkan because fuck this entire thing 
 		Api->Device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, true, Driver);
 		if (!Api->Device)

@@ -5,27 +5,35 @@
 #include "../include/slib.h"
 using namespace sl;
 
+struct Uniform
+{
+	float random;
+	float intenstiy;
+	float time;
+	bool invertColor; 
+};
+
 int main()
 {
-	if (!Init("example main", 640, 480, 0))
+	if (!Init("example main", 700, 700, 32))
 	{
 		return 1;
 	}
 	SetTicks(100);
 
 	{
-		Texture tex = LoadTexture("sample.png");
-		if (!tex.Data)
+		Texture tex = LoadTexture("wrong_path.png");
+		Texture tex2 = LoadTexture("sample.png");
+		if (!tex.Data || !tex2.Data)
 		{
 			return 1;
 		}
 
-		Shader shader = LoadShader("shader.spv", 1);
-		if (!shader.Shader_ || !shader.RenderState)
-		{
-			return 1;
-		}
-		float value = 0;
+		Shader shader = LoadShader("high_shader.spv", 1);
+
+		Uniform uniform = {};
+		uniform.intenstiy = 0;
+		uniform.random = 0;
 
 		while (!ShouldClose())
 		{
@@ -34,19 +42,16 @@ int main()
 
 			}
 
-			ClearBuffer();
-			if (KeyDown(Key::up))
-				value += 0.01;
-			if (KeyDown(Key::down))
-				value -= 0.01;
-			if (value > 1. || value < 0.)
-				value = 0;
+			uniform.invertColor = MouseDown(Mouse::left);
 
-			PushUniforms(shader, 0, &value, sizeof(float));
+			ClearBuffer();
+
+			PushUniforms(shader, 0, &uniform, sizeof(Uniform));
 			BeginShader(shader);
 			
-			RenderTexture(tex);
-
+			RenderTexture(tex, {200, 200, 200, 200});
+			RenderTexture(tex, { MouseX(), MouseY(), 400, 400});
+			
 			EndShader();
 
 			FlipBuffer();

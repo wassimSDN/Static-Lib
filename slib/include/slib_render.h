@@ -159,6 +159,7 @@ namespace sl
 	* Load an image from disk into a Surface, uses a temporary Surface internally.
 	* 
 	* \param Path the path to the image file.
+	* 
 	* \returns a texture with regular render function if the image was found,
 	*		   a texture with tiled render function otherwise
 	*/
@@ -194,16 +195,16 @@ namespace sl
 	* \sa LoadTexture
 	*/
 	void DestroyTexture(Texture &texture);
-
-	//Incomplete API, DO NOT USE
-	//TODO refactor slib to complete the shader interface
-	struct Shader;
-	Shader LoadShader(const char* Path, int NumberOfUniformBuffers);
-	void PushUniforms(Shader& shader, int slot, void* Data, size_t size);
-	void BeginShader(Shader& shader);
-	void EndShader();
-	void DestroyShader(Shader& shader);
-
+	
+	/*
+	* a structure that represents a Pixel Shader to be used for render calls
+	* 
+	* \sa LoadShader
+	* \sa DestroyShader
+	* \sa BeginShader
+	* \sa EndShader
+	* \sa PushUniforms
+	*/
 	struct Shader
 	{
 		void* Shader_ = nullptr;
@@ -211,5 +212,82 @@ namespace sl
 
 		~Shader();
 	};
-	//*Incomplete API, DO NOT USE
+	/*
+	* Load a compiled Pixel Shade file from disk, the format must be Vulkan's 'SPIR-V'.
+	* The Pixel Shader must have the following bindings:
+	* 
+	* `
+	* 		Texture2D u_texture : register(t0, space2);
+	*		SamplerState u_sampler : register(s0, space2);
+	*  
+	*		struct input_name
+	*		{
+	*  			float4 v_color : COLOR0;
+	*  			float2 v_uv : TEXCOORD0;
+	*		};
+	*  
+	*		struct output_name 
+	*		{
+	*			float4 o_color : SV_Target;
+	*		};
+	* `
+	* 
+	* \params Path path of the Shader file.
+	* \params NumberOfUniformBuffers the number of uniform buffers the Shader uses.
+	* 
+	* \returns a Shader with on success, {nullptr, nullptr} on failure.
+	* 
+	* \sa DestroyShader
+	* \sa BeginShader
+	* \sa EndShader
+	* \sa PushUniforms
+	*/
+	Shader LoadShader(const char* Path, int NumberOfUniformBuffers);
+	/*
+	* Begin a Shader, all render calls between the call of this function and the call
+	* of 'EndShader' will use the loaded Pixel Shader instead of the default one.
+	* 
+	* \param shader the shader to begin using.
+	* 
+	* \sa EndShader
+	* \sa LoadShader
+	* \sa DestroyShader
+	* \sa PushUniforms
+	*/
+	void BeginShader(Shader& shader);
+	/*
+	* End a Shader, all render calls will use the default Pixel Shader until 
+	* the next 'BeginShader' call.
+	* 
+	* \sa BeginShader
+	* \sa LoadShader
+	* \sa DestroyShader
+	* \sa PushUniforms
+	*/
+	void EndShader();
+	/*
+	* Release a Shader from the GPU.
+	* 
+	* \params shader the Shader to release.
+	* 
+	* \sa LoadShader
+	* \sa BeginShader
+	* \sa EndShader
+	* \sa PushUniforms
+	*/
+	void DestroyShader(Shader& shader);
+	/* 
+	* Push Uniform data to the Shader.
+	* 
+	* \param shader the shader that uses the data.
+	* \param Slot the slot to push data to, must match on the Shader.
+	* \param Data a pointer to the data to be pushed.
+	* \param Size size of the data to be pushed.
+	* 
+	* \sa LoadShader
+	* \sa DestroyShader
+	* \sa BeginShader
+	* \sa EndShader
+	*/
+	void PushUniforms(Shader& shader, int Slot, void* Data, size_t Size);
 }
